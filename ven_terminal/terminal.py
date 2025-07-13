@@ -1,13 +1,17 @@
 import getinput
 import os
-
+import time
 
 class terminal():
     def __init__(self):
         self.text = getinput.Getinput()
     
    
-    def cdir(self):
+    def __clear(self) :
+        os.system('cls' if os.name == 'nt' else 'clear')
+    
+    def __cdir(self):
+        self.__clear()
         newdir = self.text.strinput("Enter the new directory : ")
         try : 
             os.chdir(newdir)
@@ -15,9 +19,10 @@ class terminal():
         except Exception :
                 #print(newdir)
                 print("Wrong directory!!")
-                self.cdir()   
+                self.__cdir()   
     
-    def mkdir(self):
+    def __mkdir(self):
+        self.__clear()
         name = self.text.strinput("Enter the name of folder : ")
         if os.path.exists(name) :
                 print("This folder is exists")
@@ -25,7 +30,8 @@ class terminal():
         os.mkdir(name)
         print(f"{name} folder created in {os.getcwd()}")
     
-    def rmdir(self):
+    def __rmdir(self):
+        self.__clear()
         name = self.text.strinput("Enter the name of folder : ")
         if os.path.exists(name) :
             os.rmdir(name)
@@ -34,13 +40,15 @@ class terminal():
         print("This folder is not exists")
         return
     
-    def showItem(self):
+    def __showItem(self):
+        self.__clear()
         items = os.listdir()
         print(os.getcwd())
         for idx, name in enumerate(items, start=1):
             print(f"{idx} {name}")
     
-    def mkfile(self):
+    def __mkfile(self):
+        self.__clear()
         file = self.text.strinput("Enter the file name with format(filename.format) : ")
         if os.path.exists(file) :
             print("This file is already exists")
@@ -49,11 +57,12 @@ class terminal():
             with open(file,"w") as f :
                 f.write("")
             print(f"File created")
-            os.close()
+            
         except Exception as e :
             print(e)
     
-    def rmfile(self) :
+    def __rmfile(self) :
+        self.__clear()
         file = self.text.strinput("Enter the file name with format(filename.format) : ")
         if os.path.exists(file) :
             try:
@@ -64,7 +73,8 @@ class terminal():
             return
         print("This file is not exists")
     
-    def renamefolder(self):
+    def __renamefolder(self):
+        self.__clear()
         dirname = self.text.strinput("Enter the folder name : ")
         if os.path.exists(dirname) :
             newname = self.text.strinput("Enter the new name : ")
@@ -76,7 +86,8 @@ class terminal():
         else :
             print("Folder is not exists")
     
-    def renamefile(self) :
+    def __renamefile(self) :
+        self.__clear()
         dirname = self.text.strinput("Enter the file name : ")
         if os.path.exists(dirname) :
             newname = self.text.strinput("Enter the new name : ")
@@ -87,10 +98,42 @@ class terminal():
                 print(e)
         else :
             print("file is not exists")
-         
-        
-                    
-                
-            
-                    
-    
+    def run(self) :
+        text = getinput.Getinput()
+        while True :
+            print("1 --> Change Directory")
+            print("2 --> Create Folder")
+            print("3 --> Remove Folder")
+            print("4 --> Show Folder Item")
+            print("5 --> Create File")
+            print("6 --> Remove File")
+            print("7 --> Rename Folder")
+            print("8 --> Rename File")
+            print("9 --> Exit")
+            print("\n")
+            print(f"Cruten directory : {os.getcwd()}")
+            print("\n")
+            choice = text.strinput("Enter the number : ")
+            if choice == "1" :
+                self.__cdir()
+            elif choice == "2" :
+                self.__mkdir()
+            elif choice == "3" :
+                self.__rmdir()
+            elif choice == "4" :
+                self.__showItem()
+            elif choice == "5" :
+                self.__mkfile()    
+            elif choice == "6" :
+                self.__rmfile()    
+            elif choice == "7" :
+                self.__renamefolder()  
+            elif choice == "8" :
+                self.__renamefile()
+            elif choice == "9" :
+                print("Goodbye")
+                break
+            else :
+                print("Invalid input !!")
+            time.sleep(5)
+            os.system('cls' if os.name == 'nt' else 'clear')
