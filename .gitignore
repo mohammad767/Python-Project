@@ -1,0 +1,16 @@
+ven_terminal/.vscode/
+ven_terminal/__pycache__/
+twiter_venv/.idea/
+twiter_venv/__pycache__/
+to_do_list/__pycache__/
+to_do_list/dist/
+to_do_list/build/
+password/dist/
+password/build/
+Money_manger/__pycache__/
+Money_manger/Backup/
+contact_lst/build/
+contact_lst/dist/
+contact_lst/*.csv
+__pycache__
+.vscode
