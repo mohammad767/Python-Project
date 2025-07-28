@@ -3,7 +3,16 @@ import string
 import re
 import datetime
 import data
+import mysql.connector
 
+con = mysql.connector.connect(
+        user="root",
+        password="P@ssw0rd",
+        host="127.0.0.1",
+        port="3306",
+        database="reserve"
+    )
+cur = con.cursor()
 
 
 letters  = string.ascii_letters
@@ -14,16 +23,15 @@ stuffs = letters + nums + sings
 
 class User():
     def __init__(self):
-        self.__id = random.randint(1000,10000)
-        self.__name = "Nonmae"
+        self._id = random.randint(1000,10000)
+        self.__name = "Noname"
         self.__family = "Nofamily"
         self.__phonenumber = "000"
-        self.__email = "Noemail"
         self.__birth_date = "00/00/00"
         self.__mcode = "____"
         self.__gender = "____"
         self.__username = "User"
-        self.__password = "".join(random.sample(stuffs,10))
+        self._password = "".join(random.sample(stuffs,10)).strip()
     
     @property
     def name(self) :
@@ -58,14 +66,6 @@ class User():
             self.__birth_date = value
     
     @property
-    def email(self) :
-        return self.__email
-    @email.setter
-    def email(self,value):
-        if re.findall(r"^[\w\.-]+@[A-Za-z]+\.[A-Za-z]{2,3}$", value):
-            self.__email = value
-    
-    @property
     def gender(self):
         return self.__gender
     @gender.setter
@@ -98,9 +98,10 @@ class Doctor(User):
         self.__specialty = "____"
         self.__degree = "____"
         self.__exp_year = "0"
-        self.__medical_code = "____"
+        self.__medical_code = "0"
         self.__shift_hours = "0-0"
         self.__visit_cost = "00"
+        self.__email = "Noemail"
     
     @property
     def specialty(self):
@@ -117,6 +118,14 @@ class Doctor(User):
     def degree(self,value):
         if value in data.degree:
             self.__degree = value
+           
+    @property
+    def email(self) :
+        return self.__email
+    @email.setter
+    def email(self,value):
+        if re.findall(r"^[\w\.-]+@[A-Za-z]+\.[A-Za-z]{2,3}$", value):
+            self.__email = value
             
     @property
     def exp_year(self):
@@ -152,13 +161,40 @@ class Doctor(User):
             
 class visit():
     def __init__(self):
-        self.__id = random.randint(1000,10000)
-        self.__date = "____"
-        self.__time = "____"
+        cur.execute("SELECT name FROM doctor")
+        self.doctr_lst = cur.fetchall()
+        cur.execute("SELECT name FROM pation")
+        self.pation_lst = cur.fetchall()
+        self._id = random.randint(1000,10000)
+        self._date = "____"
+        self._time = "____"
         self.__visit_cost = "000"
         self.__doctor_name = "____"
         self.__pation_name = "____"
         self.__number = "0"
+    @property
+    def cost(self):
+        return self.__visit_cost
+    @cost.setter
+    def cost(self,value):
+        if int(value) > 50:
+            self.__visit_cost = value
+    
+    @property
+    def doctor_name(self):
+        return self.__doctor_name
+    @doctor_name.setter
+    def doctor_name(self,value):
+        if value in self.doctr_lst:
+            self.__doctor_name = value
+    @property
+    def pation_name(self):
+        return self.__pation_name
+    @pation_name.setter
+    def pation_name(self,value):
+        if value in self.pation_lst:
+            self.__pation_name = value
+                
     
         
          
