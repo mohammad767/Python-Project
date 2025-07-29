@@ -15,5 +15,6 @@ contact_lst/*.csv
 visit_sys/__pycache__
 visit_sys/.vscode
 visit_sys/info.txt
+visit_sys/test.py
 __pycache__
 .vscode

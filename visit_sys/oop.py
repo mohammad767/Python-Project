@@ -5,6 +5,8 @@ import datetime
 import data
 import mysql.connector
 
+#random.randint()
+
 con = mysql.connector.connect(
         user="root",
         password="P@ssw0rd",
@@ -161,17 +163,18 @@ class Doctor(User):
             
 class visit():
     def __init__(self):
-        cur.execute("SELECT name FROM doctor")
-        self.doctr_lst = cur.fetchall()
-        cur.execute("SELECT name FROM pation")
-        self.pation_lst = cur.fetchall()
+        cur.execute("SELECT d_id FROM doctor")
+        self.doctr_lst =[row[0] for row in cur.fetchall()]
+        cur.execute("SELECT p_id FROM pation")
+        self.pation_lst = [row[0] for row in cur.fetchall()]
         self._id = random.randint(1000,10000)
         self._date = "____"
         self._time = "____"
         self.__visit_cost = "000"
-        self.__doctor_name = "____"
-        self.__pation_name = "____"
-        self.__number = "0"
+        self.__doctor_id = "____"
+        self.__pation_id = "____"
+        self._number = 1
+        self._status = "Not check"
     @property
     def cost(self):
         return self.__visit_cost
@@ -181,20 +184,20 @@ class visit():
             self.__visit_cost = value
     
     @property
-    def doctor_name(self):
-        return self.__doctor_name
-    @doctor_name.setter
-    def doctor_name(self,value):
+    def doctor_id(self):
+        return self.__doctor_id
+    @doctor_id.setter
+    def doctor_id(self,value):
         if value in self.doctr_lst:
-            self.__doctor_name = value
+            self.__doctor_id = value
     @property
-    def pation_name(self):
-        return self.__pation_name
-    @pation_name.setter
-    def pation_name(self,value):
+    def pation_id(self):
+        return self.__pation_id
+    @pation_id.setter
+    def pation_id(self,value):
         if value in self.pation_lst:
-            self.__pation_name = value
-                
+            self.__pation_id = value
+    
     
         
          

@@ -3,7 +3,8 @@ import oop
 import hashlib
 from colorama import init, Fore, Style
 import data
-
+from datetime import datetime, timedelta,time
+import random
 
 def get_connection():
     return mysql.connector.connect(
@@ -188,10 +189,85 @@ def login_d():
     if ok :
         pass
 
+def get_docs() :
+    con = get_connection()
+    cur = con.cursor()
+    cur.execute("SELECT d_id,name,family,specialty,visit_cost FROM doctor")
+    doc_lst = cur.fetchall()
+    cur.execute("SELECT d_id FROM doctor")
+    id_lst = [row[0] for row in cur.fetchall()]
+    print(id_lst)
+    for i in  range(len(doc_lst)) : 
+        print(f"doctor id : {doc_lst[i][0]}  doctor name : {doc_lst[i][1]} {doc_lst[i][2]}  specialty : {doc_lst[i][3]} visit cost : {doc_lst[i][4]} ")
+        print("-"*20)
+    id = int(input("Enter the doctor id : "))
+    while id not in id_lst :
+        print("Wrong")
+        id = int(input("Enter the doctor id : "))
+    
+    return id    
 
+def add_visit(id):
+    con = get_connection()
+    cur = con.cursor()
+    vis = oop.visit()
+    vis._id = random.randint(1000,10000)
+    vis.pation_id = id
+    vis.doctor_id = get_docs()
+    print(vis.doctor_id)
+    cur.execute("SELECT visit_id FROM visit WHERE pation_id = %s AND doctor_id = %s AND status = %s",(id,vis.doctor_id,"Not check"))
+    check = cur.fetchall()
+    if not check :
+        vis._date = datetime.now().date() + timedelta(days=2)
+        cur.execute("SELECT shift_hours FROM doctor WHERE d_id = %s",(vis.doctor_id,))
+        shift = cur.fetchone()[0]
+        start = shift[0:2]
+        end = shift[6:8]
+        if start.startswith == "0" :
+            start = start.lstrip("0")
+        if end.startswith == "0" : 
+            end = end.lstrip("0") 
+        
+        visit_hour = random.randint(int(start),int(end))
+        visit_min = random.randint(0,59)
+        vis._time = time(visit_hour,visit_min,0)
+        
+        cur.execute("SELECT visit_cost FROM doctor WHERE d_id = %s",(vis.doctor_id,))
+        vis.cost = cur.fetchone()[0]
+        cur.execute("SELECT MAX(number) FROM visit WHERE doctor_id = %s",(vis.doctor_id,))
+        number = cur.fetchone()[0]
+        if number == None :
+            vis._number = 1
+        else :
+            vis._number = vis._number + number
+        
+        print(f"number :{vis._number}")
+        print("BEF sql")
+        vis_data = (vis._id,vis.pation_id,vis.doctor_id,vis._date,
+                    vis._time,vis.cost,vis._number,vis._status)
+        sql = """INSERT INTO visit(visit_id,pation_id,doctor_id,
+        date,time,visit_cost,number,status)VALUES(%s,%s,%s,%s,
+        %s,%s,%s,%s)"""
+        cur.execute(sql,vis_data)
+        con.commit()
+        print("DATA ADD")
+        return
+    else :
+        print("You have already have not check visit with this doctor : ")
+        return
 
-#Create tabel
+def cancel_visit(id):
+    pass
 
+def search():
+    pass
+
+def day_visit(d_id):
+    pass
+
+def see_profile(id):
+    pass
+    
 def Pation():
     con = get_connection()
     cur = con.cursor()
@@ -207,7 +283,6 @@ def Pation():
         usernmae VARCHAR(20) not null,
         password VARCHAR(50) not null)""")
     print("Table create")
-
 
 def Doctor():
     con = get_connection()
@@ -230,3 +305,20 @@ def Doctor():
         usernmae VARCHAR(20) not null,
         password VARCHAR(50) not null)""")
     print("Table create")
+
+def visit():
+    con = get_connection()
+    cur = con.cursor()
+    cur.execute("""CREATE TABLE visit(
+        visit_id INT primary key,
+        pation_id INT not null,
+        doctor_id INT not null,
+        date DATE not null,
+        time TIME not null,
+        visit_cost INT not null,
+        number INT not null,
+        status VARCHAR(15) not null,
+        foreign key(pation_id)  references pation(p_id),
+        foreign key(doctor_id)  references doctor(d_id)
+        )""")    
+    print("Table created")
