@@ -158,7 +158,6 @@ def login_p():
     cur = con.cursor()
     username = input("Enter your usernmae : ")
     password = input("Enter your password : ")
-    password = input("Enter your password : ")
     password = hashlib.sha256(password.encode())
     cur.execute("SELECT p_id FROM pation WHERE username = %s AND password = %s",
                 (username, password.hexdigest()))
@@ -175,7 +174,6 @@ def login_d():
     con = get_connection()
     cur = con.cursor()
     username = input("Enter your usernmae : ")
-    password = input("Enter your password : ")
     password = input("Enter your password : ")
     password = hashlib.sha256(password.encode())
     cur.execute("SELECT p_id FROM doctor WHERE username = %s AND password = %s",
@@ -256,18 +254,72 @@ def add_visit(id):
         print("You have already have not check visit with this doctor : ")
         return
 
-def cancel_visit(id):
+
     pass
 
 def search():
-    pass
-
+    con = get_connection()
+    cur = con.cursor()
+    fil = input("Search doctor by name,specialty : ")
+    if fil.lower() == "name" :
+        name = input("Enter doctor name : ").title()
+        cur.execute("SELECT d_id,name,family,specialty,visit_cost FROM doctor WHERE name = %s",(name,))
+        doc_lst = cur.fetchall()
+        if doc_lst == None :
+            print("Not found")
+            return
+        for i in  range(len(doc_lst)) : 
+            print(f"doctor id : {doc_lst[i][0]}  doctor name : {doc_lst[i][1]} {doc_lst[i][2]}  specialty : {doc_lst[i][3]} visit cost : {doc_lst[i][4]} ")
+            print("-"*20)
+        return
+    elif fil.lower() == "specialty" :
+        spec = input("Enter the specialty : ")
+        cur.execute("SELECT d_id,name,family,specialty,visit_cost FROM doctor WHERE specialty = %s",(spec,))
+        doc_lst = cur.fetchall()
+        if doc_lst == None :
+            print("Not found")
+            return
+        else :
+            for i in  range(len(doc_lst)) : 
+                print(f"doctor id : {doc_lst[i][0]}  doctor name : {doc_lst[i][1]} {doc_lst[i][2]}  specialty : {doc_lst[i][3]} visit cost : {doc_lst[i][4]} ")
+                print("-"*20)
+                return
+        
 def day_visit(d_id):
-    pass
+    con = get_connection()
+    cur = con.cursor()
+    cur.execute("SELECT date,time FROM visit WHERE doctor_id = %s AND status = %s",(d_id,"Not check"))
+    d_data = cur.fetchall()
+    for index,value in enumerate(d_data,start=1) :
+        today = datetime.now().date()        
+        if today.strftime("%d") == value[0].strftime("%d") :
+            print(f"{index}-- {value[0]} {value[1]}")
+            print("*"*10)
 
 def see_profile(id):
     pass
     
+def update() :
+    con = get_connection()
+    cur = con.cursor()
+    cur.execute("SELECT date,visit_id FROM visit WHERE status = %s",("Not check",))
+    d_data = cur.fetchall()
+    print(d_data)
+    today = datetime.now().date()
+    print(today)
+    for row in d_data :
+        visit_date = row[0]
+        visit_id = row[1] 
+        if visit_date < today:
+            cur.execute("UPDATE visit SET status = %s WHERE visit_id = %s", ("Expired", visit_id))
+            con.commit()
+            print(f"Visit {visit_id} updated to Expired.")
+            print("*" * 10)
+        else :
+            print("OK")
+            print("*"*10)
+
+# create table
 def Pation():
     con = get_connection()
     cur = con.cursor()
