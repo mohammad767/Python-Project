@@ -43,7 +43,7 @@ def create_acc_p():
     while pation.mcode == "____":
         print("Wrong")
         pation.mcode = input("Enter your meli code again : ")
-    ch = input("Do you want have a username(Y/N) if you choose n usernaem = fullname")
+    ch = input("Do you want have a username(Y/N) if you choose n usernaem = fullname : ")
     if ch.lower() == "n" :
         pation.username = pation.name+pation.family    
     else :
@@ -126,7 +126,7 @@ def create_acc_d():
     while doc.__visit_cost == "00":
         print("Wrong")
         doc.__visit_cost = input("Enter your visit cost again : ")
-    ch = input("Do you want have a username(Y/N) if you choose n usernaem = fullname")
+    ch = input("Do you want have a username(Y/N) if you choose n usernaem = fullname : ")
     if ch.lower() == "n" :
         doc.username = doc.name+doc.family    
     else :
@@ -140,7 +140,7 @@ def create_acc_d():
     doc_data = (doc._id,doc.name,doc.family,doc.phonenumber,doc.email,
                 doc.birth_date,doc.mcode,doc.gender,doc.specialty,doc.degree,
                 doc.exp_year,doc.medical_code,doc.shift_hours,doc.__visit_cost,
-                doc.username,doc._password)
+                doc.username,password)
     sql = """INSERT INTO doctor(d_id,name,family,phonenumber,email,
     birth_date,meli_code,gender,specialty,degree,experience_years,medical_code,
     shift_hours,visit_cost,usernmae,password)VALUES(%s,%s,%s,%s,
@@ -159,7 +159,7 @@ def login_p():
     username = input("Enter your usernmae : ")
     password = input("Enter your password : ")
     password = hashlib.sha256(password.encode())
-    cur.execute("SELECT p_id FROM pation WHERE username = %s AND password = %s",
+    cur.execute("SELECT p_id FROM pation WHERE usernmae = %s AND password = %s",
                 (username, password.hexdigest()))
     result = cur.fetchone()[0]
     ok = False
@@ -168,7 +168,23 @@ def login_p():
     else:
         ok = True
     if ok :
-        pass
+        while True :
+            print("a --> add visit")
+            print("s --> search doctor")
+            print("v --> see visits")
+            print("x --> exit")
+            ch = input("Enter your choice : ").lower()
+            if ch == "a":
+                add_visit(result)
+            elif ch == "s" :
+                search()
+            elif ch == "v" :
+                see_visits(result)
+            elif ch == "x" : 
+                print("Goodbye")
+                break
+            else :
+                print("Invalid input")
 
 def login_d():
     con = get_connection()
@@ -176,7 +192,7 @@ def login_d():
     username = input("Enter your usernmae : ")
     password = input("Enter your password : ")
     password = hashlib.sha256(password.encode())
-    cur.execute("SELECT p_id FROM doctor WHERE username = %s AND password = %s",
+    cur.execute("SELECT d_id FROM doctor WHERE usernmae = %s AND password = %s",
                 (username, password.hexdigest()))
     result = cur.fetchone()[0]
     ok = False
@@ -185,8 +201,9 @@ def login_d():
     else:
         ok = True
     if ok :
-        pass
-
+        update(result)
+        day_visit(result)
+        
 def get_docs() :
     con = get_connection()
     cur = con.cursor()
@@ -194,7 +211,6 @@ def get_docs() :
     doc_lst = cur.fetchall()
     cur.execute("SELECT d_id FROM doctor")
     id_lst = [row[0] for row in cur.fetchall()]
-    print(id_lst)
     for i in  range(len(doc_lst)) : 
         print(f"doctor id : {doc_lst[i][0]}  doctor name : {doc_lst[i][1]} {doc_lst[i][2]}  specialty : {doc_lst[i][3]} visit cost : {doc_lst[i][4]} ")
         print("-"*20)
@@ -240,7 +256,6 @@ def add_visit(id):
             vis._number = vis._number + number
         
         print(f"number :{vis._number}")
-        print("BEF sql")
         vis_data = (vis._id,vis.pation_id,vis.doctor_id,vis._date,
                     vis._time,vis.cost,vis._number,vis._status)
         sql = """INSERT INTO visit(visit_id,pation_id,doctor_id,
@@ -251,11 +266,8 @@ def add_visit(id):
         print("DATA ADD")
         return
     else :
-        print("You have already have not check visit with this doctor : ")
+        print("You have already have not check visit with this doctor")
         return
-
-
-    pass
 
 def search():
     con = get_connection()
@@ -285,6 +297,23 @@ def search():
                 print("-"*20)
                 return
         
+def doc_name(d_id):
+    con = get_connection()
+    cur = con.cursor()
+    cur.execute("SELECT name,family FROM doctor WHERE d_id = %s",(d_id,))
+    data = cur.fetchone()
+    fullname = f"{data[0]} {data[1]}"
+    return fullname
+
+def see_visits(id) :
+    con = get_connection()
+    cur = con.cursor()
+    cur.execute("SELECT doctor_id,date,time FROM visit WHERE pation_id = %s AND status = %s",(id,"Not check"))
+    data = cur.fetchall()
+    for index,value in enumerate(data,start=1):
+        print(f"{index} - doctor name : {doc_name(value[0])} date : {value[1]} time : {value[2]}")
+        print("*"*20)
+        
 def day_visit(d_id):
     con = get_connection()
     cur = con.cursor()
@@ -295,30 +324,21 @@ def day_visit(d_id):
         if today.strftime("%d") == value[0].strftime("%d") :
             print(f"{index}-- {value[0]} {value[1]}")
             print("*"*10)
-
-def see_profile(id):
-    pass
-    
-def update() :
+    if index == 1 :
+        print("NO visit for today")   
+         
+def update(d_id) :
     con = get_connection()
     cur = con.cursor()
-    cur.execute("SELECT date,visit_id FROM visit WHERE status = %s",("Not check",))
+    cur.execute("SELECT date,visit_id FROM visit WHERE doctor_id = %s AND status = %s",(d_id,"Not check"))
     d_data = cur.fetchall()
-    print(d_data)
     today = datetime.now().date()
-    print(today)
     for row in d_data :
         visit_date = row[0]
         visit_id = row[1] 
         if visit_date < today:
             cur.execute("UPDATE visit SET status = %s WHERE visit_id = %s", ("Expired", visit_id))
             con.commit()
-            print(f"Visit {visit_id} updated to Expired.")
-            print("*" * 10)
-        else :
-            print("OK")
-            print("*"*10)
-
 # create table
 def Pation():
     con = get_connection()
